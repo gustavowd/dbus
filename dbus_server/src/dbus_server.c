@@ -69,6 +69,11 @@ const char *server_introspection_xml =
 	"      <arg name='int32' direction='in' type='(ii)'/>\n"
 	"      <arg name='int32' direction='out' type='(i)'/>\n"
 	"    </method>\n"
+	"    <method name='Mul'>\n"
+	"      <arg name='int32a' direction='in' type='i'/>\n"
+	"      <arg name='int32b' direction='in' type='i'/>\n"
+	"      <arg name='int32' direction='out' type='i'/>\n"
+	"    </method>\n"
 	"    <method name='EmitSignal'>\n"
 	"    </method>\n"
 	"    <method name='Quit'>\n"
@@ -240,6 +245,23 @@ DBusHandlerResult server_message_handler(DBusConnection *conn, DBusMessage *mess
 		dbus_message_append_args(reply,
 					DBUS_TYPE_INT32, &i,
 					 DBUS_TYPE_INVALID);
+
+	} else if (dbus_message_is_method_call(message, "org.example.TestInterface", "Mul")) {
+			int i,j;
+
+			if (!dbus_message_get_args(message, &err,
+							DBUS_TYPE_INT32, &i,
+							DBUS_TYPE_INT32, &j,
+						   DBUS_TYPE_INVALID))
+				goto fail;
+
+			if (!(reply = dbus_message_new_method_return(message)))
+				goto fail;
+
+			i = i * j;
+			dbus_message_append_args(reply,
+						DBUS_TYPE_INT32, &i,
+						 DBUS_TYPE_INVALID);
 
 	} else if (dbus_message_is_method_call(message, "org.example.TestInterface", "EmitSignal")) {
 

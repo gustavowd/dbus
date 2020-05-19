@@ -77,6 +77,55 @@ void test_Adder(GDBusProxy *proxy)
 	g_variant_unref(result);
 }
 
+void test_Mul(GDBusProxy *proxy)
+{
+	GVariant *result;
+	//const GVariantType *type;
+	GError *error = NULL;
+	gint32 i=0;
+
+	g_printf("Calling Mul '5' * '7'...\n");
+	//GVariant *range[2];
+	//range[0] = g_variant_new_int32(5);
+	//range[1] = g_variant_new_int32(15);
+	result = g_dbus_proxy_call_sync(proxy,
+					"Mul",
+					g_variant_new ("(ii)", 5, 15),
+					G_DBUS_CALL_FLAGS_NONE,
+					-1,
+					NULL,
+					&error);
+	g_assert_no_error(error);
+	g_variant_get (result, "i", &i);
+	//value1 = g_variant_new ("(s(ii))", "Hello", 55, 77);//enviar multplos parametros
+	//g_variant_get (value1, "(s(ii))", &string, &x, &y); // pegar multiplos parametros
+	g_printf("The server answered: '%d'\n", i);
+	g_variant_unref(result);
+}
+
+
+void test_Sum(GDBusProxy *proxy)
+{
+	GVariant *result;
+	//const GVariantType *type;
+	GError *error = NULL;
+	gint32 i=0;
+
+	g_printf("Calling Sum('5 + 7')...\n");
+	result = g_dbus_proxy_call_sync(proxy,
+					"Sum",
+					g_variant_new ("(ii)", 5, 7),
+					G_DBUS_CALL_FLAGS_NONE,
+					-1,
+					NULL,
+					&error);
+	g_assert_no_error(error);
+	g_variant_get (result, "(i)", &i);
+	//value1 = g_variant_new ("(s(ii))", "Hello", 55, 77);//enviar multplos parametros
+	//g_variant_get (value1, "(s(ii))", &string, &x, &y); // pegar multiplos parametros
+	g_printf("The server answered: '%d'\n", i);
+	g_variant_unref(result);
+}
 
 void on_emit_signal_callback(GDBusConnection *conn,
 			     const gchar *sender_name,
@@ -178,6 +227,7 @@ int main(void)
 	conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
 	g_assert_no_error(error);
 
+#if 1
 	proxy = g_dbus_proxy_new_sync(conn,
 				      G_DBUS_PROXY_FLAGS_NONE,
 				      NULL,				/* GDBusInterfaceInfo */
@@ -186,9 +236,21 @@ int main(void)
 				      "org.example.TestInterface",	/* interface */
 				      NULL,				/* GCancellable */
 				      &error);
+#else
+	proxy = g_dbus_proxy_new_sync(conn,
+				      G_DBUS_PROXY_FLAGS_NONE,
+				      NULL,				/* GDBusInterfaceInfo */
+				      "br.copel.inversandro.DBusTutorial2",		/* name */
+				      "/br/copel/inversandro/DBusTutorial2",	/* object path */
+				      "br.copel.inversandro.DBusTutorial2",	/* interface */
+				      NULL,				/* GCancellable */
+				      &error);
+#endif
+
 	g_assert_no_error(error);
 
 	/* read the version property of the interface */
+#if 1
 	variant = g_dbus_proxy_get_cached_property(proxy, "Version");
 	g_assert(variant != NULL);
 	g_variant_get(variant, "s", &version);
@@ -200,7 +262,11 @@ int main(void)
 	test_Echo(proxy);
 	test_EmitSignal(proxy);
 	test_Adder(proxy);
-	test_Quit(proxy);
+	//test_Mul(proxy);
+	//test_Quit(proxy);
+#else
+	test_Sum(proxy);
+#endif
 
 	g_object_unref(proxy);
 	g_object_unref(conn);
